@@ -80,4 +80,4 @@ class ModelBCD:
                                                           self.gamma, self.rho, n_samples)
 
         # update W1 and b1
-        self.w1, self.b1 = updateWb(self.U1, x, self.w1, self.b1, self.alpha, self.rho)
+        self.w1, self.b1 = updateWn(self.U1, x, self.w1, self.b1, self.alpha, self.rho)
