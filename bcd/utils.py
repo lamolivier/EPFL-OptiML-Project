@@ -6,9 +6,11 @@ from .data_utils import *
 from bcd.ModelBCD import ModelBCD
 import time
 from .metrics import *
+from dfw.ModelDFW import ModelDFW
+from torch.utils.data import DataLoader
 
 
-def full_train_test(N_train, N_test, n_iter = 5, n_epochs =50, l1_size = 200, l2_size = 200, l3_size = 200, gamma = 1, alpha = 1, rho = 1, verbose = False):
+def full_train_test(optimizer, N_train, N_test, n_iter, n_epochs, batch_size = 0, d1 = 200, d2 = 200, d3 = 200, gamma = 1, alpha = 1, rho = 1, verbose = False):
     
     
     # Init metrics arrays
@@ -20,28 +22,38 @@ def full_train_test(N_train, N_test, n_iter = 5, n_epochs =50, l1_size = 200, l2
     
     mnist_trainset, mnist_testset = generate_pair_sets()
     
+    d0 =  1*28*28
+    
     for i in range(1, n_iter + 1):
         print("Iteration %d" % i)
-        
+
         start_time = time.time()
         
-    
-        train_input, train_target, y_train_1hot, test_input, test_target, y_test_1hot = preprocess_data(mnist_trainset, mnist_testset, N_train, N_test)
-        model = ModelBCD(train_input.size()[0], l1_size, l2_size, l3_size, 10, gamma, alpha, rho)
-        tr_losses, te_losses, tr_acc, te_acc = model.train(n_epochs, train_input,train_target,y_train_1hot, test_input, test_target, y_test_1hot, verbose)
-        
+        if (optimizer == "BCD"):
+            train_input, train_target, y_train_1hot, test_input, test_target, y_test_1hot = preprocess_data(mnist_trainset, mnist_testset, N_train, N_test)
+            model = ModelBCD(d0, d1, d2, d3, 10, gamma, alpha, rho)
+            tr_losses, te_losses, tr_acc, te_acc = model.train(n_epochs, train_input,train_target,y_train_1hot, test_input, test_target, y_test_1hot, verbose)
+        else:
+            train_data = DataLoader(mnist_trainset,batch_size=batch_size)
+            test_data = DataLoader(mnist_testset,batch_size=batch_size)
+            model = ModelDFW(d0, d1, d2, d3, 10)
+            tr_losses, te_losses, tr_acc, te_acc = model.train(train_data, test_data, n_epochs)
 
         train_loss_matrix.append(tr_losses)
         validation_loss_matrix.append(te_losses)
         
         end_time = time.time()
         
+        if (optimizer == "BCD"):
         # Compute test accuracy
-        acc = accuracy(model, N_train, mnist_trainset, mnist_testset)
+            acc = accuracy(model, N_train, mnist_trainset, mnist_testset)
+        else: 
+            test_data = DataLoader(mnist_testset,batch_size=batch_size, shuffle = True)
+            acc = model.test(test_data, batch_size)
         
         accuracy_array.append(acc)
         time_array.append(end_time - start_time)
-        
+    
     plot_losses(train_loss_matrix, validation_loss_matrix)
     plot_accuracy(accuracy_array)
     
