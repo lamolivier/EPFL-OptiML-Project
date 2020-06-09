@@ -131,44 +131,44 @@ class ModelBCD:
 
             
     def train(self, n_epochs, train_input,train_target,y_train_1hot, test_input, test_target, y_test_1hot, verbose = False):
-    # Create model parameters
-    criterion = nn.MSELoss()
+        # Create model parameters
+        criterion = nn.MSELoss()
 
-    # Init the losses
-    tr_losses = []
-    te_losses = []
-    tr_acc = []
-    te_acc = []
+        # Init the losses
+        tr_losses = []
+        te_losses = []
+        tr_acc = []
+        te_acc = []
     
-    for e in range(n_epochs):
+        for e in range(n_epochs):
         
-        self.init_aux_params(train_input)
+            self.init_aux_params(train_input)
     
-        self.update_params(y_train_1hot, train_input)
+            self.update_params(y_train_1hot, train_input)
 
-        train_output = self.forward(train_input)
-        pred_train = torch.argmax(train_output, dim=0)
+            train_output = self.forward(train_input)
+            pred_train = torch.argmax(train_output, dim=0)
 
-        test_output = self.forward(test_input)
-        pred_test = torch.argmax(test_output, dim=0)
-
-        
-        correct_train = pred_train == train_target
-        acc_train = np.mean(correct_train.numpy())
-
-        correct_test = pred_test == test_target
-        acc_test = np.mean(correct_test.numpy())
-        
-        # compute training loss
-        tr_losses.append(criterion(self.V4, y_train_1hot))
-        te_losses.append(criterion(test_output, y_test_1hot))
-        tr_acc.append(acc_train)
-        te_acc.append(acc_test)
+            test_output = self.forward(test_input)
+            pred_test = torch.argmax(test_output, dim=0)
 
 
-        # print results
-        if verbose:
-            print(f"Epoch: {e + 1} / {n_epochs} \n Train loss: {tr_losses[e]:.4f} - Test loss:{te_losses[e]:.4f} \n Train acc: {acc_train:.4f} - Test acc: {acc_test:.4f}")
-        
+            correct_train = pred_train == train_target
+            acc_train = np.mean(correct_train.numpy())
 
-    return tr_losses, te_losses, tr_acc, te_acc
+            correct_test = pred_test == test_target
+            acc_test = np.mean(correct_test.numpy())
+
+            # compute training loss
+            tr_losses.append(criterion(self.V4, y_train_1hot))
+            te_losses.append(criterion(test_output, y_test_1hot))
+            tr_acc.append(acc_train)
+            te_acc.append(acc_test)
+
+
+            # print results
+            if verbose:
+                print(f"Epoch: {e + 1} / {n_epochs} \n Train loss: {tr_losses[e]:.4f} - Test loss:{te_losses[e]:.4f} \n Train acc: {acc_train:.4f} - Test acc: {acc_test:.4f}")
+
+
+        return tr_losses, te_losses, tr_acc, te_acc
