@@ -139,10 +139,10 @@ class ModelBCD:
         te_losses = []
         tr_acc = []
         te_acc = []
+        
+        self.init_aux_params(train_input)
     
         for e in range(n_epochs):
-        
-            self.init_aux_params(train_input)
     
             self.update_params(y_train_1hot, train_input)
 

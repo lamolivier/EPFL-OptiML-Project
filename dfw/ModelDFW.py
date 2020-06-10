@@ -43,7 +43,7 @@ class ModelDFW:
         self.model = three_layer(d0, d1, d2, d3, classes)
         
         
-    def train(self, train_data, test_data, n_epochs, lr=1e-1, verbose=False):
+    def train(self, train_data, test_data, n_epochs, lr=1e-1, verbose=True):
         
         # create DFW optimizer 
         optimizer = DFW(self.model.parameters(), eta=lr)
@@ -59,38 +59,34 @@ class ModelDFW:
             epoch_te_loss = 0.0
             epoch_te_acc = 0.0
             epoch_tr_acc = 0.0
-            #Pas trop de sens de test comme ca mais similaire à BCD    
-            for (tr_inputs, tr_classes), (te_inputs, te_classes)  in zip(train_data, test_data):
-                #tr_inputs = next(iter(train_data))[0]
-                #tr_classes = next(iter(train_data))[1]
-
-                #te_inputs = next(iter(test_data))[0]
-                #te_classes = next(iter(test_data))[1]
+            
+            for (te_inputs, te_classes) in test_data:
                 
-                tr_inputs = tr_inputs.view(-1, tr_inputs.shape[1] * tr_inputs.shape[2] * tr_inputs.shape[3])
                 te_inputs = te_inputs.view(-1, te_inputs.shape[1] * te_inputs.shape[2] * te_inputs.shape[3])
-
+                te_output = self.model(te_inputs)
+                te_loss = criterion(te_output, te_classes.long())
+                
+                epoch_te_loss += te_loss.item()
+                epoch_te_acc += self.test_batch(te_inputs, te_classes)
+            
+            for (tr_inputs, tr_classes) in train_data:
+             
+                tr_inputs = tr_inputs.view(-1, tr_inputs.shape[1] * tr_inputs.shape[2] * tr_inputs.shape[3])
+                
                 # Forward pass
                 tr_output = self.model(tr_inputs)
-                te_output = self.model(te_inputs)
-
+                
                 tr_loss = criterion(tr_output, tr_classes.long())
-                te_loss = criterion(te_output, te_classes.long())
-
-                # Apply the backward step
+                
+                epoch_tr_loss += tr_loss.item()
+                epoch_tr_acc += self.test_batch(tr_inputs, tr_classes)
+                
+                # Apply the backward ste 
                 optimizer.zero_grad()
                 tr_loss.backward()
                 optimizer.step(lambda: float(tr_loss))
-
-                #tr_losses.append(tr_loss)
-                #te_losses.append(te_loss)
-                epoch_tr_loss += tr_loss.item()
-                epoch_te_loss += te_loss.item()
-                epoch_tr_acc += self.test_batch(tr_inputs, tr_classes)
-                epoch_te_acc += self.test_batch(te_inputs, te_classes)
-                
-                #tr_acc.append(self.test(tr_inputs, tr_classes))
-                #te_acc.append(self.test(te_inputs, te_classes))
+                      
+           
             epoch_tr_loss = epoch_tr_loss / len(train_data)
             epoch_te_loss = epoch_te_loss / len(test_data)
             epoch_tr_acc = epoch_tr_acc / len(train_data)
