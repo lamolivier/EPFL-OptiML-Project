@@ -1,65 +1,89 @@
-import numpy as np
-import torch
-from torchvision import datasets, transforms
-from bcd import helpers
+import time
 from bcd.ModelBCD import ModelBCD
+from bcd.helpers import *
+from bcd.metrics import *
+from dfw.ModelDFW import ModelDFW
+from bcd.data_utils import *
 
-dtype = torch.float
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-# Convert to tensor and scale to [0, 1]
-ts = transforms.Compose([transforms.ToTensor(),
-                         transforms.Normalize((0,), (1,))])
-mnist_trainset = datasets.MNIST(root='data', train=True, download=True, transform=ts)
-mnist_testset = datasets.MNIST(root='data', train=False, download=True, transform=ts)
-x_train, y_train, y_train_1hot, x_test, y_test, y_test_1hot = helpers.preprocess_data(mnist_trainset, mnist_testset)
+def full_train_test(optimizer, N_train, N_test, n_iter, n_epochs, batch_size=1, d1=200, d2=200, d3=200, gamma=1,
+                    alpha=1, rho=1, verbose=False):
+    
+    # Initialize metrics arrays
+    accuracy_test_array = []
+    accuracy_train_array = []
 
-gamma = alpha = rho = 1
-classes = 10
-input_layer_size, n_samples_train = x_train.size()
-_, n_samples_test = x_test.size()
+    tr_acc_evolution = []
+    te_acc_evolution = []
 
-# Layers: input + 3 hidden + output
-layer_1_size = layer_2_size = layer_3_size = 200
+    time_array = []
+    
+    # Generate the sets
+    train_set, test_set = get_sets()
+    
+    # Generate train and test DataLoader
+    train_data, test_data = generate_pair_sets(train_set, test_set, N_train, N_test, batch_size)
 
-model = ModelBCD(input_layer_size, layer_1_size, layer_2_size, layer_3_size, classes, gamma, alpha, rho)
+    d0 = 1 * 28 * 28
 
-n_iter = 60
-loss = np.empty(n_iter)
-accuracies_train = np.empty(n_iter)
-accuracies_test = np.empty(n_iter)
+    for i in range(1, n_iter + 1):
+        print("Iteration %d" % i)
+        
+        if (optimizer == "BCD"):
+            train_input, train_target, y_train_1hot, test_input, test_target, y_test_1hot = preprocess_data(train_data,
+                                                                                                            test_data,
+                                                                                                            N_train,
+                                                                                                            N_test)
+            # Instantiate the model
+            model = ModelBCD(d0, d1, d2, d3, 10, gamma, alpha, rho)
+            
+            start_time = time.time()
+            
+            # Train the model
+            tr_acc, te_acc = model.train(n_epochs, train_input, train_target, y_train_1hot,
+                                         test_input, test_target, y_test_1hot, verbose=verbose)
+        else:
+            # Instantiate the model
+            model = ModelDFW(d0, d1, d2, d3, 10)
+            
+            start_time = time.time()
+            
+            # Train the model
+            tr_acc, te_acc = model.train(train_data, test_data, n_epochs, verbose=verbose)
 
-model.init_aux_params(x_train)
+        end_time = time.time()
+        
+        # Store the train and test accuracy for each epoch of the iteration
+        tr_acc_evolution.append(tr_acc)
+        te_acc_evolution.append(te_acc)
+        
+        # Computes test accuracy with "new" data
+        if (optimizer == "BCD"):
+            acc_test = model.test(N_test, train_set, test_set)
+        else:
+            _, test_data = generate_pair_sets(train_set, test_set, N_train, N_test, batch_size)
+            acc_test = model.test(test_data, batch_size)
+            
+        # Store the test accuracies for each iteration
+        accuracy_test_array.append(acc_test)
+        
+        # Store the train accuracies for each iteration
+        accuracy_train_array.append(tr_acc[n_epochs - 1])
+        
+        # Store the duration of the iteraton
+        time_array.append(end_time - start_time)
+    
+    # Plot the training and validation accuracy
+    plot_accuracies(tr_acc_evolution, te_acc_evolution)
+    
+    # Plot the test accuracy
+    plot_accuracy(accuracy_test_array)
+    
+    # Compute the mean and std of the test accuracies
+    acc_mean, acc_std = extract_mean_std(accuracy_test_array)
+    
+    # Compute the mean and std of the duration an iteraion
+    time_mean, time_std = extract_mean_std(time_array)
 
-# TODO add time measurements
-
-print('Train on', n_samples_train, 'samples, validate on', n_samples_test, 'samples')
-for k in range(n_iter):
-    model.update_params(y_train_1hot, x_train)
-
-    train_output = model.forward(x_train)
-
-    # training prediction
-    pred_train = torch.argmax(train_output, dim=0)
-
-    test_output = model.forward(x_test)
-
-    # test/validation prediction
-    pred_test = torch.argmax(test_output, dim=0)
-
-    # compute training loss
-    loss[k] = gamma / 2 * torch.pow(torch.dist(model.V4, y_train_1hot, 2), 2)
-
-    # compute training accuracy
-    correct_train = pred_train == y_train
-    accuracies_train[k] = np.mean(correct_train.numpy())
-
-    # compute validation accuracy
-    correct_test = pred_test == y_test
-    accuracies_test[k] = np.mean(correct_test.numpy())
-
-    # print results
-    print(
-        f"Epoch: {k + 1} / {n_iter} \n loss: {loss[k]:.4f} - acc:{accuracies_train[k]:.4f} - val_acc:{accuracies_test[k]:.4f}")
-
-helpers.plot_results(n_iter, accuracies_train, accuracies_test, loss)
+    print("Accuracy: %.3f +/- %.3f" % (acc_mean, acc_std))
+    print("Iteration time:  %.3f +/- %.3f seconds" % (time_mean, time_std))

@@ -1,54 +1,40 @@
-import numpy as np
-import torch
 import matplotlib.pyplot as plt
+import numpy as np
 
 
-def preprocess_data(trainset, testset):
-    # Manipulate train set
-    x_d0 = trainset[0][0].size()[0]
-    x_d1 = trainset[0][0].size()[1]
-    x_d2 = trainset[0][0].size()[2]
-    N = len(trainset)
-    K = 10
-    x_train = torch.empty((N, x_d0 * x_d1 * x_d2))
-    y_train = torch.empty(N, dtype=torch.long)
-    for i in range(N):
-        x_train[i, :] = torch.reshape(trainset[i][0], (1, x_d0 * x_d1 * x_d2))
-        y_train[i] = trainset[i][1]
-    x_train = torch.t(x_train)
-    y_train_one_hot = torch.zeros(N, K).scatter_(1, torch.reshape(y_train, (N, 1)), 1)
-    y_train_one_hot = torch.t(y_train_one_hot)
-
-    # Manipulate test set
-    N_test = len(testset)
-    x_test = torch.empty((N_test, x_d0 * x_d1 * x_d2))
-    y_test = torch.empty(N_test, dtype=torch.long)
-    for i in range(N_test):
-        x_test[i, :] = torch.reshape(testset[i][0], (1, x_d0 * x_d1 * x_d2))
-        y_test[i] = testset[i][1]
-    x_test = torch.t(x_test)
-    y_test_one_hot = torch.zeros(N_test, K).scatter_(1, torch.reshape(y_test, (N_test, 1)), 1)
-    y_test_one_hot = torch.t(y_test_one_hot)
-
-    return x_train, y_train, y_train_one_hot, x_test, y_test, y_test_one_hot
+# Build confidence interval from multiple trainings on different data
+def build_conf_interval(all_losses):
+    mean = np.mean(all_losses, axis=0)
+    std = np.std(all_losses, axis=0)
+    lower = mean - 2 * std
+    upper = mean + 2 * std
+    return mean, upper, lower
 
 
-def plot_results(n_iter, acc_train, acc_test, loss):
-    fig, ax = plt.subplots()
-    ax.plot(np.arange(1, n_iter + 1), loss, label='Training loss')
-    ax.set_title('Three-layer MLP (BCD)')
-    ax.set_xlabel('Epochs')
-    ax.set_ylabel('Loss')
+# Build train and test losses during training with confidence interval
+def plot_accuracies(all_train_accuracies, all_test_accuracies):
+    tr_mean, tr_upper, tr_lower = build_conf_interval(all_train_accuracies)
+    te_mean, te_upper, te_lower = build_conf_interval(all_test_accuracies)
+    x = range(1, len(tr_mean) + 1)
 
-    fig.savefig('results/losses.png', format='png', orientation='landscape')
+    plt.figure(figsize=(15, 8))
+    plt.plot(x, tr_mean, linewidth=2, label='Train accuracy')  # mean curve.
+    plt.plot(x, te_mean, linewidth=2, color='g', label='Test accuracy')
+    plt.fill_between(x, tr_lower, tr_upper, color='b', alpha=.1)
+    plt.fill_between(x, te_lower, te_upper, color='g', alpha=.1)
 
-    # Plot of Accuracies
-    fig, ax = plt.subplots()
-    ax.plot(np.arange(1, n_iter + 1), acc_train, label='Training accuracy', linewidth=1.5)
-    ax.plot(np.arange(1, n_iter + 1), acc_test, label='Validation accuracy', linewidth=1.5)
-    ax.set_title('Three-layer MLP (BCD)')
-    ax.set_xlabel('Epochs')
-    ax.set_ylabel('Accuracy')
+    plt.legend()
+    plt.ylabel('Average accuracy')
+    plt.xlabel("Number of epochs")
+    plt.title('Accuracy vs number of epochs')
+    plt.show()
 
-    fig.savefig('results/accuracies.png', format='png', orientation='landscape')
-    print('figures generated and saved in root directory')
+
+# Build a boxplot of the accuracy for multiple iterations.
+def plot_accuracy(test_accuracies):
+    print('Test accuracy mean = ' + str(np.mean(test_accuracies)))
+    plt.figure(figsize=(15, 8))
+    plt.boxplot(test_accuracies)
+    plt.xticks([1], ['Test accuracy distribution'])
+    plt.title('Test Accuracy distribution')
+    plt.show()
