@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import numpy as np
-from .data_utils import generate_pair_sets, preprocess_data
+from utils.data_utils import generate_pair_sets, preprocess_data
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
