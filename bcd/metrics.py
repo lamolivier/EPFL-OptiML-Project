@@ -1,7 +1,12 @@
-import torch
 import math
 from .data_utils import *
 import numpy as np
+import math
+
+import numpy as np
+
+from .data_utils import *
+
 
 def extract_mean_std(array):
     mean = sum(array) / len(array)
