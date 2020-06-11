@@ -42,7 +42,9 @@ TODO : put report.tex in report folder
 ##### Python files:
 
 - `./src/utils/data_utils.py`: contains helper methods for data loading and preprocessing
-- `./src/utils/plot_utils.py`
+- `./src/utils/plot_utils.py`: contains helper methods for plotting and to vizualize our results
+- `./src/utils/metrics.py`: contains a helper methos to compute mean and standard deviation of an array
+
 
 
 
