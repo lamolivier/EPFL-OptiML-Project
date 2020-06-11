@@ -11,8 +11,10 @@ def extract_mean_std(array):
 
 
 # Compute accuracy for digit recognition.
-def accuracy(model, N, mnist_trainset, mnist_testset):
-    _, _, _, x_test, y_test, _ = preprocess_data(mnist_trainset, mnist_testset, 0, N)
+def accuracy(model, N, train_set, test_set):
+    
+    train_data, test_data = generate_pair_sets(train_set, test_set, 0, N)
+    _, _, _, x_test, y_test, _ = preprocess_data(train_data, test_data, 0, N)
     
     test_output = model.forward(x_test)
     pred_test = torch.argmax(test_output, dim=0)
