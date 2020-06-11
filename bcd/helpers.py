@@ -31,9 +31,11 @@ def plot_losses(all_train_losses, all_test_losses):
     plt.show()
 
 # Build a boxplot of the accuracy for multiple iterations.
-def plot_accuracy(all_accuracies):
-    print('Test accuracy mean = ' + str(np.mean(all_accuracies)))
+def plot_accuracy(test_accuracies, train_accuracies):
+    print('Train accuracy mean = ' + str(np.mean(train_accuracies)))
+    print('Test accuracy mean = ' + str(np.mean(test_accuracies)))
     plt.figure(figsize=(15, 8))
-    plt.boxplot(all_accuracies)
-    plt.title('Test Accuracy distribution')
+    plt.boxplot([train_accuracies, test_accuracies])
+    plt.xticks([1, 2], ['Train accuracy distribution', 'Test accuracy distribution'])
+    plt.title('Train/Test Accuracy distribution')
     plt.show()

@@ -165,7 +165,6 @@ class ModelBCD:
             tr_acc.append(acc_train)
             te_acc.append(acc_test)
 
-
             # print results
             if verbose:
                 print(f"Epoch: {e + 1} / {n_epochs} \n Train loss: {tr_losses[e]:.4f} - Test loss:{te_losses[e]:.4f} \n Train acc: {acc_train:.4f} - Test acc: {acc_test:.4f}")

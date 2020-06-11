@@ -3,6 +3,7 @@ import torch.nn as nn
 from dfw.losses import MultiClassHingeLoss
 from dfw import DFW
 from torch.nn import functional as F
+import itertools
 
 
 class ThreeLayer(nn.Module):
@@ -53,23 +54,24 @@ class ModelDFW:
         te_losses = []
         tr_acc = []
         te_acc = []
-        
+
+        test = []
+        train_size = len(train_data)
+        test_size = len(test_data)
+        ratio = int(train_size/test_size)-1
+
+        for i, j in enumerate(test_data):
+            test.append(j)
+            for r in range(ratio):
+                test.append((None, None))
+            
         for e in range(n_epochs):
             epoch_tr_loss = 0.0
             epoch_te_loss = 0.0
             epoch_te_acc = 0.0
             epoch_tr_acc = 0.0
             
-            for (te_inputs, te_classes) in test_data:
-                
-                te_inputs = te_inputs.view(-1, te_inputs.shape[1] * te_inputs.shape[2] * te_inputs.shape[3])
-                te_output = self.model(te_inputs)
-                te_loss = criterion(te_output, te_classes.long())
-                
-                epoch_te_loss += te_loss.item()
-                epoch_te_acc += self.test_batch(te_inputs, te_classes)
-            
-            for (tr_inputs, tr_classes) in train_data:
+            for (tr_inputs, tr_classes), (te_inputs, te_classes) in zip(train_data, test):
              
                 tr_inputs = tr_inputs.view(-1, tr_inputs.shape[1] * tr_inputs.shape[2] * tr_inputs.shape[3])
                 
@@ -81,16 +83,24 @@ class ModelDFW:
                 epoch_tr_loss += tr_loss.item()
                 epoch_tr_acc += self.test_batch(tr_inputs, tr_classes)
                 
+                if te_inputs != None:
+                    te_inputs = te_inputs.view(-1, te_inputs.shape[1] * te_inputs.shape[2] * te_inputs.shape[3])
+                    te_output = self.model(te_inputs)
+                    te_loss = criterion(te_output, te_classes.long())
+
+                    epoch_te_loss += te_loss.item()
+                    epoch_te_acc += self.test_batch(te_inputs, te_classes)
+                
                 # Apply the backward ste 
                 optimizer.zero_grad()
                 tr_loss.backward()
                 optimizer.step(lambda: float(tr_loss))
-                      
-           
-            epoch_tr_loss = epoch_tr_loss / len(train_data)
-            epoch_te_loss = epoch_te_loss / len(test_data)
-            epoch_tr_acc = epoch_tr_acc / len(train_data)
-            epoch_te_acc = epoch_te_acc / len(test_data)
+                
+            
+            epoch_tr_loss = epoch_tr_loss / train_size
+            epoch_te_loss = epoch_te_loss / test_size
+            epoch_tr_acc = epoch_tr_acc / train_size
+            epoch_te_acc = epoch_te_acc / test_size
             tr_losses.append(epoch_tr_loss)
             te_losses.append(epoch_te_loss)
             tr_acc.append(epoch_tr_acc)
