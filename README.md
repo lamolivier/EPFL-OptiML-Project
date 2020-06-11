@@ -41,12 +41,10 @@ TODO : put report.tex in report folder
 
 ##### Python files:
 
-###### utils folder
-
 - `./src/utils/data_utils.py`: contains helper methods for data loading and preprocessing
 - `./src/utils/plot_utils.py`: contains helper methods for plotting and to vizualize our results
 - `./src/utils/metrics.py`: contains a helper methos to compute mean and standard deviation of an array
-
+- `./src/bcd/ModelBCD.py`: contains a three layers model class with its differents functions to perform training using Block Coordinate Descent optimization
 
 
 
