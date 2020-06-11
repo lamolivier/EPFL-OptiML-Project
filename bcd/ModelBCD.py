@@ -1,16 +1,18 @@
 import numpy as np
 import torch
 import torch.nn as nn
+import numpy as np
+from .data_utils import generate_pair_sets, preprocess_data
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-
+# Forward step
 def feed_forward(Wn, bn, Vn_1, n_samples):
     Un = torch.addmm(bn.repeat(1, n_samples), Wn, Vn_1)
     Vn = nn.ReLU()(Un)
     return Un, Vn
 
-
+# Update step of the state variable V
 def updateVn(Un, Un1, Wn1, bn1, rho, gamma):
     d = Wn1.size()[1]
     I = torch.eye(d, device=device)
@@ -20,7 +22,7 @@ def updateVn(Un, Un1, Wn1, bn1, rho, gamma):
                   rho * torch.mm(torch.t(Wn1), Un1 - bn1.repeat(1, col_Un1)) + gamma * Vn)
     return Vs
 
-
+# Update step of the weights and bias
 def updateWn(Un, Vn_1, Wn, bn, alpha, rho):
     d, N = Vn_1.size()
     I = torch.eye(d, device=device)
@@ -30,7 +32,7 @@ def updateWn(Un, Vn_1, Wn, bn, alpha, rho):
     bs = (alpha * bn + rho * torch.sum(Un - torch.mm(Wn, Vn_1), dim=1).reshape(bn.size())) / (rho * N + alpha)
     return Ws, bs
 
-
+# Approximative ReLU function
 def relu_prox(a, b, gamma, d, N):
     x = (a + gamma * b) / (1 + gamma)
     y = torch.min(b, torch.zeros(d, N, device=device))
@@ -41,7 +43,7 @@ def relu_prox(a, b, gamma, d, N):
     val = torch.where((-a <= gamma * b) & (gamma * b <= a * (gamma - np.sqrt(gamma * (gamma + 1)))), b, val)
     return val
 
-
+# Update of one block
 def block_update(Wn, bn, Wn_1, bn_1, Un, Vn_1, Un_1, Vn_2, dn_1, alpha, gamma, rho, dim):
     # update W(n) and b(n)
     Wn, bn = updateWn(Un, Vn_1, Wn, bn, alpha, rho)
@@ -82,6 +84,7 @@ class ModelBCD:
         self.d3 = d3
         self.classes = classes
 
+    # Initilization of the auxiliary varibles U and V
     def init_aux_params(self, x):
         n_samples = x.size()[1]
         self.V0 = x
@@ -90,7 +93,8 @@ class ModelBCD:
         self.U3, self.V3 = feed_forward(self.w3, self.b3, self.V2, n_samples)
         self.U4 = torch.addmm(self.b4.repeat(1, n_samples), self.w4, self.V3)
         self.V4 = self.U4  # as sigma_4 = Id
-
+    
+    # Forward propagation
     def forward(self, x):
         n_samples = x.size()[1]
         V1 = feed_forward(self.w1, self.b1, x, n_samples)[1]
@@ -98,7 +102,8 @@ class ModelBCD:
         V3 = feed_forward(self.w3, self.b3, V2, n_samples)[1]
         output = torch.addmm(self.b4.repeat(1, n_samples), self.w4, V3)
         return output
-
+    
+    # Update all the variables cyclically while fixing the remaining blocks
     def update_params(self, y_one_hot, x):
         n_samples = x.size()[1]
 
@@ -134,15 +139,17 @@ class ModelBCD:
 
     def train(self, n_epochs, train_input, train_target, y_train_1hot, test_input, test_target, y_test_1hot,
               verbose=False):
-        # Create model parameters
+        
+        # Instantiate loss function 
         criterion = nn.MSELoss()
 
-        # Init the losses
+        # Initialization of the metrics arrays
         tr_losses = []
         te_losses = []
         tr_acc = []
         te_acc = []
-
+        
+        # Initialize auxiliary variables
         self.init_aux_params(train_input)
 
         for e in range(n_epochs):
@@ -171,9 +178,28 @@ class ModelBCD:
             tr_losses.append(criterion(self.V4, y_train_1hot).cpu().numpy())
             te_losses.append(criterion(test_output, y_test_1hot).cpu().numpy())
 
-            # print results
+            # Print results
             if verbose:
                 print(
                     f"Epoch: {e + 1} / {n_epochs} \n Train loss: {tr_losses[e]:.4f} - Test loss:{te_losses[e]:.4f} \n Train acc: {acc_train:.4f} - Test acc: {acc_test:.4f}")
 
         return tr_acc, te_acc
+
+    
+    
+    # Compute accuracy for digit recognition using BCD
+    def test(self, N, train_set, test_set):
+
+        # Generate "new" data 
+        train_data, test_data = generate_pair_sets(train_set, test_set, 0, N)
+        _, _, _, x_test, y_test, _ = preprocess_data(train_data, test_data, 0, N)
+
+        # Compute the model's prediction
+        test_output = self.forward(x_test)
+        pred_test = torch.argmax(test_output, dim=0)
+
+        # Compare the prediction with the real values
+        correct_test = pred_test == y_test
+        acc = np.mean(correct_test.numpy())
+
+        return acc
