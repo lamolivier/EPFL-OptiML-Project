@@ -49,7 +49,11 @@ TODO : put report.tex in report folder
 - `./src/dfw/baselines/hinge.py`: MultiClassHingLoss implementation from the same repository as above
 - `./src/dfw/dfw.py`: Deep Frank Wolfe optimizer also taken from the same repository
 - `./src/dfw/ModelDFW.py` contains a three layers model class with its differents functions, to perform training using Deep Frank Wolfe optimizer and to compute the test accuracy
-- `./src/run.py`: main python script which allows to compare the two optimizers and to modify various parameters as described in the #### Setup section
+- `./src/run.py`: main python script which allows to compare the two optimizers and to modify various parameters as described in the Setup section
+
+##### Jupyter Notebooks:
+
+- `./src/results.ipynb`: notebook containing the results of our experiments
 
 
 
