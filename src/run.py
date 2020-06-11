@@ -1,10 +1,14 @@
 import time
 from bcd.ModelBCD import ModelBCD
-from bcd.helpers import *
-from bcd.metrics import *
+from utils.helpers import *
+from utils.metrics import *
 from dfw.ModelDFW import ModelDFW
-from bcd.data_utils import *
+from utils.data_utils import *
+import os
+os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
+import sys
+sys.path.append('my/path/to/module/folder')
 
 def full_train_test(optimizer, N_train, N_test, n_iter, n_epochs, batch_size=1, d1=200, d2=200, d3=200, gamma=1,
                     alpha=1, rho=1, verbose=False):
@@ -87,3 +91,8 @@ def full_train_test(optimizer, N_train, N_test, n_iter, n_epochs, batch_size=1, 
 
     print("Accuracy: %.3f +/- %.3f" % (acc_mean, acc_std))
     print("Iteration time:  %.3f +/- %.3f seconds" % (time_mean, time_std))
+
+    
+if __name__ == "__main__":
+    
+    full_train_test("BCD",30000, 5000, 1, 3 ,d1 = 200, d2 = 200, d3 = 200, verbose = True)

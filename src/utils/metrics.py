@@ -1,6 +1,5 @@
 import math
 
-
 # Computes the mean and standard deviation of values in an array
 def extract_mean_std(array):
     

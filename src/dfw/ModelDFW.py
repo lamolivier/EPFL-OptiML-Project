@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
-
 from dfw import DFW
 from dfw.losses import MultiClassHingeLoss
 
