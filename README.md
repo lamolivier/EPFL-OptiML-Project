@@ -44,8 +44,12 @@ TODO : put report.tex in report folder
 - `./src/utils/data_utils.py`: contains helper methods for data loading and preprocessing
 - `./src/utils/plot_utils.py`: contains helper methods for plotting and to vizualize our results
 - `./src/utils/metrics.py`: contains a helper methos to compute mean and standard deviation of an array
-- `./src/bcd/ModelBCD.py`: contains a three layers model class with its differents functions to perform training using Block Coordinate Descent optimizer
+- `./src/bcd/ModelBCD.py`: contains a three layers model class with its differents functions to perform training using Block Coordinate Descent optimizer and to compute the test accuracy
 - `./src/dfw/baselines/BPGrad.py`: BPGrad optimizer from [https://github.com/oval-group/dfw]
+- `./src/dfw/baselines/hinge.py`: MultiClassHingLoss implementation from the same repository as above
+- `./src/dfw/dfw.py`: Deep Frank Wolfe optimizer also taken from the same repository
+- `./src/dfw/ModelDFW.py` contains a three layers model class with its differents functions, to perform training using Deep Frank Wolfe optimizer and to compute the test accuracy
+- `./src/run.py`: main python script which allows to compare the two optimizers and to modify various parameters as described in the #### Setup section
 
 
 
