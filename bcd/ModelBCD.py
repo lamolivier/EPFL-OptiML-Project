@@ -2,8 +2,9 @@ import torch
 import torch.nn as nn
 import numpy as np
 
-def feed_forward(Wn, bn, Vn_1 ,n_samples):
-    Un = torch.addmm(bn.repeat(1, n_samples), Wn, Vn_1) 
+
+def feed_forward(Wn, bn, Vn_1, n_samples):
+    Un = torch.addmm(bn.repeat(1, n_samples), Wn, Vn_1)
     Vn = nn.ReLU()(Un)
     return Un, Vn
 
@@ -14,7 +15,7 @@ def updateVn(Un, Un1, Wn1, bn1, rho, gamma):
     Vn = nn.ReLU()(Un)
     col_Un1 = Un1.size()[1]
     Vs = torch.mm(torch.inverse(rho * (torch.mm(torch.t(Wn1), Wn1)) + gamma * I),
-                     rho * torch.mm(torch.t(Wn1), Un1 - bn1.repeat(1, col_Un1)) + gamma * Vn)
+                  rho * torch.mm(torch.t(Wn1), Un1 - bn1.repeat(1, col_Un1)) + gamma * Vn)
     return Vs
 
 
@@ -23,7 +24,7 @@ def updateWn(Un, Vn_1, Wn, bn, alpha, rho):
     I = torch.eye(d)
     col_Un = Un.size()[1]
     Ws = torch.mm(alpha * Wn + rho * torch.mm(Un - bn.repeat(1, col_Un), torch.t(Vn_1)),
-                     torch.inverse(alpha * I + rho * (torch.mm(Vn_1, torch.t(Vn_1)))))
+                  torch.inverse(alpha * I + rho * (torch.mm(Vn_1, torch.t(Vn_1)))))
     bs = (alpha * bn + rho * torch.sum(Un - torch.mm(Wn, Vn_1), dim=1).reshape(bn.size())) / (rho * N + alpha)
     return Ws, bs
 
@@ -48,6 +49,7 @@ def block_update(Wn, bn, Wn_1, bn_1, Un, Vn_1, Un_1, Vn_2, dn_1, alpha, gamma, r
     Un_1 = relu_prox(Vn_1, (rho * torch.addmm(bn_1.repeat(1, dim), Wn_1, Vn_2) +
                             alpha * Un_1) / (rho + alpha), (rho + alpha) / gamma, dn_1, dim)
     return Wn, bn, Vn_1, Un_1
+
 
 class ModelBCD:
 
@@ -85,8 +87,7 @@ class ModelBCD:
         self.U2, self.V2 = feed_forward(self.w2, self.b2, self.V1, n_samples)
         self.U3, self.V3 = feed_forward(self.w3, self.b3, self.V2, n_samples)
         self.U4 = torch.addmm(self.b4.repeat(1, n_samples), self.w4, self.V3)
-        self.V4 = self.U4 #as sigma_4 = Id
-    
+        self.V4 = self.U4  # as sigma_4 = Id
 
     def forward(self, x):
         n_samples = x.size()[1]
@@ -129,21 +130,20 @@ class ModelBCD:
         # update W1 and b1
         self.w1, self.b1 = updateWn(self.U1, x, self.w1, self.b1, self.alpha, self.rho)
 
-            
-    def train(self, n_epochs, train_input,train_target,y_train_1hot, test_input, test_target, y_test_1hot, verbose = False):
+    def train(self, n_epochs, train_input, train_target, y_train_1hot, test_input, test_target, y_test_1hot,
+              verbose=False):
         # Create model parameters
         criterion = nn.MSELoss()
 
         # Init the losses
         tr_losses = []
-        te_losses = []
         tr_acc = []
         te_acc = []
-        
+
         self.init_aux_params(train_input)
-    
+
         for e in range(n_epochs):
-    
+
             self.update_params(y_train_1hot, train_input)
 
             train_output = self.forward(train_input)
@@ -151,7 +151,6 @@ class ModelBCD:
 
             test_output = self.forward(test_input)
             pred_test = torch.argmax(test_output, dim=0)
-
 
             correct_train = pred_train == train_target
             acc_train = np.mean(correct_train.numpy())
@@ -161,13 +160,13 @@ class ModelBCD:
 
             # compute training loss
             tr_losses.append(criterion(self.V4, y_train_1hot))
-            te_losses.append(criterion(test_output, y_test_1hot))
+
             tr_acc.append(acc_train)
             te_acc.append(acc_test)
 
             # print results
             if verbose:
-                print(f"Epoch: {e + 1} / {n_epochs} \n Train loss: {tr_losses[e]:.4f} - Test loss:{te_losses[e]:.4f} \n Train acc: {acc_train:.4f} - Test acc: {acc_test:.4f}")
+                print(
+                    f"Epoch: {e + 1} / {n_epochs} \n Train loss: {tr_losses[e]:.4f} -  Train acc: {acc_train:.4f} - Test acc: {acc_test:.4f}")
 
-
-        return tr_losses, te_losses, tr_acc, te_acc
+        return tr_acc, te_acc

@@ -9,8 +9,7 @@ import itertools
 class ThreeLayer(nn.Module):
     def __init__(self, d0, d1, d2, d3, classes):
         super(ThreeLayer, self).__init__()
-        
-        
+
         self.d0 = d0
         self.d1 = d1
         self.d2 = d2
@@ -21,68 +20,63 @@ class ThreeLayer(nn.Module):
         self.fc2 = nn.Linear(d1, d2)
         self.fc3 = nn.Linear(d2, d3)
         self.fc4 = nn.Linear(d3, classes)
-        
-       
-        
+
     def forward(self, x):
-        
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = F.relu(self.fc3(x))
         out = self.fc4(x)
-        
+
         return out
-    
-    
+
+
 def three_layer(d0, d1, d2, d3, classes):
     model = ThreeLayer(d0, d1, d2, d3, classes)
     return model
 
+
 class ModelDFW:
-    
+
     def __init__(self, d0, d1, d2, d3, classes):
         self.model = three_layer(d0, d1, d2, d3, classes)
-        
-        
+
     def train(self, train_data, test_data, n_epochs, lr=1e-1, verbose=True):
-        
+
         # create DFW optimizer 
         optimizer = DFW(self.model.parameters(), eta=lr)
         criterion = MultiClassHingeLoss()
-        
-        tr_losses = []
-        te_losses = []
+
         tr_acc = []
         te_acc = []
 
         test = []
         train_size = len(train_data)
         test_size = len(test_data)
-        ratio = int(train_size/test_size)-1
+        ratio = int(train_size / test_size) - 1
 
         for i, j in enumerate(test_data):
             test.append(j)
             for r in range(ratio):
                 test.append((None, None))
-            
+
         for e in range(n_epochs):
             epoch_tr_loss = 0.0
             epoch_te_loss = 0.0
             epoch_te_acc = 0.0
             epoch_tr_acc = 0.0
-            
+
             for (tr_inputs, tr_classes), (te_inputs, te_classes) in zip(train_data, test):
-             
+
                 tr_inputs = tr_inputs.view(-1, tr_inputs.shape[1] * tr_inputs.shape[2] * tr_inputs.shape[3])
-                
+
                 # Forward pass
                 tr_output = self.model(tr_inputs)
-                
+
                 tr_loss = criterion(tr_output, tr_classes.long())
-                
+
                 epoch_tr_loss += tr_loss.item()
                 epoch_tr_acc += self.test_batch(tr_inputs, tr_classes)
-                
+
                 if te_inputs != None:
                     te_inputs = te_inputs.view(-1, te_inputs.shape[1] * te_inputs.shape[2] * te_inputs.shape[3])
                     te_output = self.model(te_inputs)
@@ -90,65 +84,58 @@ class ModelDFW:
 
                     epoch_te_loss += te_loss.item()
                     epoch_te_acc += self.test_batch(te_inputs, te_classes)
-                
+
                 # Apply the backward ste 
                 optimizer.zero_grad()
                 tr_loss.backward()
                 optimizer.step(lambda: float(tr_loss))
-                
-            
-            epoch_tr_loss = epoch_tr_loss / train_size
-            epoch_te_loss = epoch_te_loss / test_size
+
             epoch_tr_acc = epoch_tr_acc / train_size
             epoch_te_acc = epoch_te_acc / test_size
-            tr_losses.append(epoch_tr_loss)
-            te_losses.append(epoch_te_loss)
+
             tr_acc.append(epoch_tr_acc)
             te_acc.append(epoch_te_acc)
             if verbose:
-                print(f"Epoch: {e + 1} / {n_epochs} \n Train loss: {tr_losses[e]:.4f} - Test loss:{te_losses[e]:.4f} \n Train acc: {tr_acc[e]:.4f} - Test acc: {te_acc[e]:.4f}")
-                
-        return tr_losses, te_losses, tr_acc, te_acc
-        
+                print(
+                    f"Epoch: {e + 1} / {n_epochs} \n Train loss: {epoch_tr_loss / train_size:.4f} - Test loss:{epoch_te_loss / test_size:.4f} \n Train acc: {tr_acc[e]:.4f} - Test acc: {te_acc[e]:.4f}")
+
+        return tr_acc, te_acc
 
     def test_batch(self, test_data, test_classes):
-       
+
         # Init the number of correct predictions
         nb_correct = 0
-                
+
         # Number of samples
         N = len(test_classes)
 
         model_output = self.model(test_data)
-                
-            # Get the targets
-        predicted_labels = torch.argmax(model_output,1,keepdim=True).view(test_classes.size()[0])
-         
-                
-            # Count the number of correct predictions
-        nb_correct +=(predicted_labels == test_classes).int().sum().item()
-            
+
+        # Get the targets
+        predicted_labels = torch.argmax(model_output, 1, keepdim=True).view(test_classes.size()[0])
+
+        # Count the number of correct predictions
+        nb_correct += (predicted_labels == test_classes).int().sum().item()
+
         return nb_correct / N
-       
+
     def test(self, test_data, batch_size):
         """Test method using the error rate as a metric """
         # Init the number of correct predictions
         nb_correct = 0
-                
+
         # Number of samples
-        N = len(test_data) * batch_size 
+        N = len(test_data) * batch_size
 
         for images, labels in iter(test_data):
-            
             images = images.view(-1, images.shape[1] * images.shape[2] * images.shape[3])
             # Run the model on a mini batch of the images
             model_output = self.model(images)
-                
+
             # Get the targets
-            predicted_labels = torch.argmax(model_output,1,keepdim=True).view(labels.size()[0])
-                
+            predicted_labels = torch.argmax(model_output, 1, keepdim=True).view(labels.size()[0])
+
             # Count the number of correct predictions
-            nb_correct +=(predicted_labels == labels).int().sum().item()
-            
+            nb_correct += (predicted_labels == labels).int().sum().item()
+
         return nb_correct / N
-       

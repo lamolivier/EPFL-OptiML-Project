@@ -13,29 +13,20 @@ def build_conf_interval(all_losses):
 
 
 # Build train and test losses during training with confidence interval
-def plot_losses(all_train_losses, all_test_losses):
-    tr_mean, tr_upper, tr_lower = build_conf_interval(all_train_losses)
-    te_mean, te_upper, te_lower = build_conf_interval(all_test_losses)
+def plot_accuracies(all_train_accuracies, all_test_accuracies):
+    tr_mean, tr_upper, tr_lower = build_conf_interval(all_train_accuracies)
+    te_mean, te_upper, te_lower = build_conf_interval(all_test_accuracies)
     x = range(1, len(tr_mean) + 1)
 
     plt.figure(figsize=(15, 8))
-    plt.plot(x, tr_mean, linewidth=2, label='Train loss')  # mean curve.
-    plt.plot(x, te_mean, linewidth=2, color='g', label='Test loss')
+    plt.plot(x, tr_mean, linewidth=2, label='Train accuracy')  # mean curve.
+    plt.plot(x, te_mean, linewidth=2, color='g', label='Test accuracy')
     plt.fill_between(x, tr_lower, tr_upper, color='b', alpha=.1)
     plt.fill_between(x, te_lower, te_upper, color='g', alpha=.1)
 
     plt.legend()
-    plt.ylabel('Average MSELoss')
+    plt.ylabel('Average accuracy')
     plt.xlabel("Number of epochs")
-    plt.title('MSELoss vs number of epochs')
+    plt.title('Accuracy vs number of epochs')
     plt.show()
 
-# Build a boxplot of the accuracy for multiple iterations.
-def plot_accuracy(test_accuracies, train_accuracies):
-    print('Train accuracy mean = ' + str(np.mean(train_accuracies)))
-    print('Test accuracy mean = ' + str(np.mean(test_accuracies)))
-    plt.figure(figsize=(15, 8))
-    plt.boxplot([train_accuracies, test_accuracies])
-    plt.xticks([1, 2], ['Train accuracy distribution', 'Test accuracy distribution'])
-    plt.title('Train/Test Accuracy distribution')
-    plt.show()
