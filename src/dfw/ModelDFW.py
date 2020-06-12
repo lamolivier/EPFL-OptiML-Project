@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
+
 from src.dfw import DFW
 from src.dfw.losses import MultiClassHingeLoss
 
@@ -88,9 +89,7 @@ class ModelDFW:
                 # Compute the accuracy for each batch and sum them
                 epoch_tr_acc += self.test_batch(tr_inputs, tr_classes)
 
-
                 if te_inputs != None:
-
                     te_inputs = te_inputs.to(device=device)
                     te_classes = te_classes.to(device=device)
 
@@ -141,7 +140,6 @@ class ModelDFW:
         nb_correct += (predicted_labels == test_classes).int().sum().item()
 
         return nb_correct / N
-
 
     # Computes the accuarcy where test_data is a DataLoader
     def test(self, test_data, batch_size):

@@ -2,7 +2,7 @@ import time
 
 from src.bcd.ModelBCD import ModelBCD
 from src.dfw import ModelDFW
-from src.utils.helpers import plot_results
+from src.utils.plot_utils import plot_results
 from src.utils.metrics import *
 
 
@@ -43,7 +43,7 @@ def full_train_test(optimizer, N_train, N_test, n_iter, n_epochs, batch_size=1, 
                                          test_input, test_target, y_test_1hot, verbose=verbose)
         else:
             # Instantiate the model
-            model = ModelDFW(d0, d1, d2, d3, 10)
+            model = ModelDFW.ModelDFW(d0, d1, d2, d3, 10)
 
             start_time = time.time()
 
