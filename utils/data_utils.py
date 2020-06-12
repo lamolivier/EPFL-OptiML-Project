@@ -30,7 +30,7 @@ def generate_pair_sets(train_set, test_set, N, N_test, batch_size=1):
         train_data = None
 
     # test_idx = [random.randrange(10000) for i in range(N_test)]
-    train_idx = random.sample(range(10000), k=N_test)
+    test_idx = random.sample(range(10000), k=N_test)
     testset = Subset(test_set, test_idx)
     test_data = DataLoader(testset, batch_size=batch_size)
 
