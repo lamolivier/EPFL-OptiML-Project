@@ -1,11 +1,12 @@
 # Opimization for Machine Learning Mini-Project
 
-### Team : [@olivierlam97](https://github.com/olivierlam97) [@zghonda](https://github.com/zghonda) [@rlaraki](https://github.com/rlaraki)
-
-### Abstract:
 
 
-### Setup:
+## Abstract
+
+This paper focuses on a practical quantitative com-parison between two optimizers in terms of training performanceand accuracy. We provide a strict experimental protocol fortesting the effectiveness of two recent implementations of Frankand Wolf and Block coordinate descent for DNNs on a standarddigit recognition task.
+
+## Setup
 
 Here are the different packages needed to reproduce our experiments:
 
@@ -29,7 +30,7 @@ All the following parameters can be tuned in the call of the `full_train_test` m
 - `d1`, `d2`, `d3` the number of nodes of the 1st, 2nd and 3rd layer
 - `alpha`, `gamma`, `rho` the hyper-parameters if optimizer = "BCD"
 
-### Directory structure:
+## Directory structure
 
 The following directory contrains different text documents, code and data files. The structure is detailed below:
 
@@ -57,9 +58,7 @@ TODO : put report.tex in report folder
 
 
 
-
-
-
+## Authors : [@olivierlam97](https://github.com/olivierlam97) [@zghonda](https://github.com/zghonda) [@rlaraki](https://github.com/rlaraki)
 
 
 
