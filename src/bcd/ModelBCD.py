@@ -202,6 +202,6 @@ class ModelBCD:
 
         # Compare the prediction with the real values
         correct_test = pred_test == y_test
-        acc = np.mean(correct_test.numpy())
+        acc = np.mean(correct_test.cpu().numpy())
 
         return acc
