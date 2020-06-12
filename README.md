@@ -17,7 +17,7 @@ Here are the different packages needed to reproduce our experiments:
 - `math`
 
 To obtain the results : 
-Run `./run.py`.
+Run `./src/run.py`.
 
 All the following parameters can be tuned in the call of the `full_train_test` method:
 
