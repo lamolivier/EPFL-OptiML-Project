@@ -1,6 +1,5 @@
 import torch
 import torch.optim as optim
-
 from torch.optim.optimizer import required
 from collections import defaultdict
 
