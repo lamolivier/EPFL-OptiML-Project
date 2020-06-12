@@ -58,7 +58,11 @@ TODO : put report.tex in report folder
 
 
 
-## Authors : [@olivierlam97](https://github.com/olivierlam97) [@zghonda](https://github.com/zghonda) [@rlaraki](https://github.com/rlaraki)
+## Authors 
+
+[@olivierlam97](https://github.com/olivierlam97) 
+[@zghonda](https://github.com/zghonda) 
+[@rlaraki](https://github.com/rlaraki)
 
 
 
