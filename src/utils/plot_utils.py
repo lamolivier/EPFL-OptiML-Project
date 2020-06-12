@@ -1,6 +1,8 @@
+import math
+
 import matplotlib.pyplot as plt
 import numpy as np
-import math
+
 
 # Computes the mean and standard deviation of values in an array
 def extract_mean_std(array):
@@ -37,15 +39,6 @@ def plot_accuracies(all_train_accuracies, all_test_accuracies):
     plt.title('Accuracy vs number of epochs')
     plt.show()
 
-
-# Build a boxplot of the accuracy for multiple iterations.
-def plot_accuracy(test_accuracies):
-    print('Test accuracy mean = ' + str(np.mean(test_accuracies)))
-    plt.figure(figsize=(15, 8))
-    plt.boxplot(test_accuracies)
-    plt.xticks([1], ['Test accuracy distribution'])
-    plt.title('Test Accuracy distribution')
-    plt.show()
 
 def plot_results(data_dict, ylabel, title, filename):
     labels = ['D=500', 'D=1000', 'D=1500']

@@ -1,9 +1,9 @@
 import time
 
-from src.bcd.ModelBCD import ModelBCD
-from src.dfw import ModelDFW
-from src.utils.plot_utils import plot_results
-from src.utils.metrics import *
+from bcd.ModelBCD import ModelBCD
+from dfw import ModelDFW
+from utils.data_utils import generate_pair_sets, get_sets, preprocess_data
+from utils.plot_utils import plot_results, extract_mean_std
 
 
 def full_train_test(optimizer, N_train, N_test, n_iter, n_epochs, batch_size=1, d1=200, d2=200, d3=200, gamma=1,
@@ -90,18 +90,18 @@ if __name__ == '__main__':
 
     N_TRAIN_SAMPLES = 60000
     N_VALI_SAMPLES = 10000
-    N_ITER = 10
+    N_ITER = 5
     N_EPOCHS = 20
     BATCH_SIZE = 500
 
     for d in [500, 1000, 1500]:
         _, _, accuracy_test_array, time_array = full_train_test('DFW', N_TRAIN_SAMPLES, N_VALI_SAMPLES, N_ITER,
                                                                 N_EPOCHS, BATCH_SIZE, verbose=True, d1=d, d2=d, d3=d)
-        times['DFW'].append(sum(time_array) / len(time_array))
+        times['DFW'].append(time_array)
         accs['DFW'].append(accuracy_test_array)
         _, _, accuracy_test_array, time_array = full_train_test('BCD', N_TRAIN_SAMPLES, N_VALI_SAMPLES, N_ITER,
                                                                 N_EPOCHS, verbose=True, d1=d, d2=d, d3=d)
-        times['BCD'].append(sum(time_array) / len(time_array))
+        times['BCD'].append(time_array)
         accs['BCD'].append(accuracy_test_array)
 
     plot_results(times, ylabel='Training time (s)', title='Training time by model complexity and optimizer',
