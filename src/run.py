@@ -1,9 +1,9 @@
 import time
 
-from bcd.ModelBCD import ModelBCD
-from dfw.ModelDFW import ModelDFW
-from utils.helpers import plot_results
-from utils.metrics import *
+from src.bcd.ModelBCD import ModelBCD
+from src.dfw import ModelDFW
+from src.utils.helpers import plot_results
+from src.utils.metrics import *
 
 
 def full_train_test(optimizer, N_train, N_test, n_iter, n_epochs, batch_size=1, d1=200, d2=200, d3=200, gamma=1,
