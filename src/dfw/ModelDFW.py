@@ -52,14 +52,15 @@ class ModelDFW:
         test_size = len(test_data)
         ratio = int(train_size / test_size) - 1
         
-        
         # Puts ratio*(None, None) between each test batch so that test array is the same length as train_data
         if ratio > 0:
             for i, j in enumerate(test_data):
                 test.append(j)
                 for r in range(ratio):
                     test.append((None, None))
-
+        else: 
+            test = test_data
+                    
         for e in range(n_epochs):
             
             epoch_tr_loss = 0.0
@@ -150,12 +151,15 @@ class ModelDFW:
 
         # Number of samples
         N = len(test_data) * batch_size
-
+        
+        # Iterate over each batch of the Loader
         for images, labels in iter(test_data):
             images = images.to(device=device)
             labels = labels.to(device=device)
-
+            
+            # Flatten each batch to feed it to our model
             images = images.view(-1, images.shape[1] * images.shape[2] * images.shape[3])
+            
             # Run the model on a mini batch of the images
             model_output = self.model(images)
 

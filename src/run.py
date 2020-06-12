@@ -1,7 +1,6 @@
 import time
 from bcd.ModelBCD import ModelBCD
-from utils.helpers import *
-from utils.metrics import *
+from utils.plot_utils import *
 from dfw.ModelDFW import ModelDFW
 from utils.data_utils import *
 import os
@@ -12,6 +11,9 @@ sys.path.append('my/path/to/module/folder')
 
 def full_train_test(optimizer, N_train, N_test, n_iter, n_epochs, batch_size=1, d1=200, d2=200, d3=200, gamma=1,
                     alpha=1, rho=1, verbose=False):
+    
+    if (optimizer == "BCD"):
+        batch_size = 1
     
     # Initialize metrics arrays
     accuracy_test_array = []
