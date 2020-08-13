@@ -22,21 +22,25 @@ def build_conf_interval(all_losses):
 
 
 # Build train and test losses during training with confidence interval
-def plot_accuracies(all_train_accuracies, all_test_accuracies):
-    tr_mean, tr_upper, tr_lower = build_conf_interval(all_train_accuracies)
-    te_mean, te_upper, te_lower = build_conf_interval(all_test_accuracies)
-    x = range(1, len(tr_mean) + 1)
+def plot_accuracies(test_accuracies_dfw, test_accuracies_bcd, filename):
+    te_mean_dfw, te_upper_dfw, te_lower_dfw = build_conf_interval(test_accuracies_dfw)
+    te_mean_bcd, te_upper_bcd, te_lower_bcd = build_conf_interval(test_accuracies_bcd)
+    x = range(1, len(te_mean_dfw) + 1)
 
-    plt.figure(figsize=(15, 8))
-    plt.plot(x, tr_mean, linewidth=2, label='Train accuracy')  # mean curve.
-    plt.plot(x, te_mean, linewidth=2, color='g', label='Test accuracy')
-    plt.fill_between(x, tr_lower, tr_upper, color='b', alpha=.1)
-    plt.fill_between(x, te_lower, te_upper, color='g', alpha=.1)
+    plt.figure(figsize=(10, 7))
+    plt.rcParams.update({'font.size': 15})
+    plt.plot(x, te_mean_dfw, linewidth=2, label='DFW')  # mean curve.
+    plt.plot(x, te_mean_bcd, linewidth=2, color='g', label='BCD')
+    plt.fill_between(x, te_lower_dfw, te_upper_dfw, color='b', alpha=.1)
+    plt.fill_between(x, te_lower_bcd, te_upper_bcd, color='g', alpha=.1)
 
     plt.legend()
+    plt.ylim((0.65, 1))
     plt.ylabel('Average accuracy')
     plt.xlabel("Number of epochs")
     plt.title('Accuracy vs number of epochs')
+
+    plt.savefig(filename, orientation='landscape')
     plt.show()
 
 
@@ -58,7 +62,7 @@ def plot_results(data_dict, ylabel, title, filename):
     ax.set_title(title)
     ax.set_xticks(x)
     ax.set_xticklabels(labels)
-    ax.legend()
+    ax.legend(loc='lower right')
 
     def autolabel(rects):
         """Attach a text label above each bar in *rects*, displaying its height."""

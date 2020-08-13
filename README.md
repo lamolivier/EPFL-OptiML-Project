@@ -1,10 +1,10 @@
-# Opimization for Machine Learning Mini-Project
+# Optimization for Machine Learning Mini-Project
 
 
 
 ## Abstract
 
-This paper focuses on a practical quantitative com-parison between two optimizers in terms of training performanceand accuracy. We provide a strict experimental protocol fortesting the effectiveness of two recent implementations of Frankand Wolf and Block coordinate descent for DNNs on a standarddigit recognition task.
+This paper focuses on a practical quantitative comparison between two optimizers in terms of training performanceand accuracy. We provide a strict experimental protocol fortesting the effectiveness of two recent implementations of Frank and Wolfe and Block coordinate descent for DNNs on a standard digit recognition task.
 
 ## Setup
 
@@ -16,8 +16,8 @@ Here are the different packages needed to reproduce our experiments:
 - `matplotlib`
 - `math`
 
-To obtain the results : 
-Run `./run.py`.
+To obtain the results :
+Run `./src/run.py`.
 
 All the following parameters can be tuned in the call of the `full_train_test` method:
 
@@ -36,7 +36,7 @@ The following directory contrains different text documents, code and data files.
 
 #### Documents:
 
-TODO : put report.tex in report folder
+report.pdf
 
 #### Code:
 
@@ -58,11 +58,9 @@ TODO : put report.tex in report folder
 
 
 
-## Authors 
-
-[@olivierlam97](https://github.com/olivierlam97) 
-[@zghonda](https://github.com/zghonda) 
-[@rlaraki](https://github.com/rlaraki)
+## Authors
 
 
-
+Lam Olivier [@olivierlam97](https://github.com/olivierlam97)\
+Zghonda Jalel [@zghonda](https://github.com/zghonda)\
+Laraki Rayane [@rlaraki](https://github.com/rlaraki)
